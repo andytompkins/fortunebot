@@ -1,4 +1,4 @@
-package com.alldata.utils;
+package org.xmpp.bots;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -18,7 +18,7 @@ public class Fortune {
 			"ethnic", "firefly", "food", "fortunes", "kids", "knghtbrd", "law", "linuxcookie",
 			"literature", "love", "magic", "medicine", "men-women", "miscellaneous", "news",
 			"paradoxum", "people", "platitudes", "politics", "riddles", "science", "songs-poems",
-			"sports", "startrek", "wisdom", "work", "zippy", "offensive", "alldata", "=][=", "duckdynasty", "mismanagement"
+			"sports", "startrek", "wisdom", "work", "zippy", "offensive", "duckdynasty", "mismanagement", "grail"
 			);
 
 	//protected HashMap<String, ArrayList<String>> fortunes;
@@ -54,7 +54,7 @@ public class Fortune {
 				fortunes.put(cat, catList);
 			  
 			} catch (Exception e) {
-				System.err.println("Error: " + e.getMessage());
+				System.err.println("Fortune Error: " + e.getMessage());
 			}
 		}
 	}

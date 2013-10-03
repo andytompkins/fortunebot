@@ -1,4 +1,4 @@
-package com.alldata.utils;
+package org.xmpp.bots;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -9,6 +9,7 @@ import java.util.Properties;
 import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
@@ -41,22 +42,24 @@ public class FortuneBot implements PacketListener {
 		}
 		
 		System.out.println("Creating XMPP connection configuration");
-		//System.out.println("props are: " + props.getProperty("server") + " and " + props.getProperty("port"));
+		System.out.println("props are: " + props.getProperty("server") + " and " + props.getProperty("port"));
 		ConnectionConfiguration config = new ConnectionConfiguration(props.getProperty("server"), Integer.parseInt(props.getProperty("port")));
-		config.setCompressionEnabled(true);
+		//config.setCompressionEnabled(true);
 		config.setSASLAuthenticationEnabled(true);
+		
 		
 		System.out.println("Creating XMPP connection");
 		connection = new XMPPConnection(config);	
 		try {
 			connection.connect();
-			connection.login(props.getProperty("user"), props.getProperty("pass"), props.getProperty("agent"));
+			SASLAuthentication.supportSASLMechanism("PLAIN", 0);
+			connection.login(props.getProperty("user"), props.getProperty("pass"));
 			
 			String confRoom = props.getProperty("room") + "@" + props.getProperty("conference");
 			room = new MultiUserChat(connection, confRoom);
 			DiscussionHistory history = new DiscussionHistory();
 		    history.setMaxStanzas(0);
-			room.join(props.getProperty("nick"), "", history, SmackConfiguration.getPacketReplyTimeout());
+			room.join(props.getProperty("nick"), props.getProperty("pass"), history, SmackConfiguration.getPacketReplyTimeout());
 			
 			room.addMessageListener(this);
 		}
