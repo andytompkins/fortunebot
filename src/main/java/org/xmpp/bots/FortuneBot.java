@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.ArrayList;
+
 
 import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.ConnectionConfiguration;
@@ -18,10 +20,11 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smackx.muc.DiscussionHistory;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
-public class FortuneBot implements PacketListener {
+public class FortuneBot {
 	
 	protected Connection connection;
-	protected MultiUserChat room;
+	//protected MultiUserChat room;
+	protected ArrayList<FortuneProcessor> rooms;
 	protected Fortune fortune;
 	protected boolean shouldRun = true;
 	
@@ -47,69 +50,43 @@ public class FortuneBot implements PacketListener {
 		//config.setCompressionEnabled(true);
 		config.setSASLAuthenticationEnabled(true);
 		
-		
 		System.out.println("Creating XMPP connection");
 		connection = new XMPPConnection(config);	
 		try {
 			connection.connect();
 			SASLAuthentication.supportSASLMechanism("PLAIN", 0);
 			connection.login(props.getProperty("user"), props.getProperty("pass"));
-			
-			String confRoom = props.getProperty("room") + "@" + props.getProperty("conference");
-			room = new MultiUserChat(connection, confRoom);
-			DiscussionHistory history = new DiscussionHistory();
-		    history.setMaxStanzas(0);
-			room.join(props.getProperty("nick"), props.getProperty("pass"), history, SmackConfiguration.getPacketReplyTimeout());
-			
-			room.addMessageListener(this);
 		}
 		catch (XMPPException ex) {
-			System.err.println("Caught XMPP Exception");
+			System.err.println("Caught XMPP Exception while connecting and logging in");
 			ex.printStackTrace();
 		}
-
-		fortune = new Fortune();
-	}
-
-	public void processPacket(Packet packet) {
-		String fortuneStr = "No fortune.";
 		
-	 	String msg = ((Message)packet).getBody();
-        System.out.println("Received message: " + msg);
-        
-        if (msg.equalsIgnoreCase("fortunebot quit")) {
-        	shouldRun = false;
-        	fortuneStr = "I'll BRB Wismar. Don't worry. Life will go on.";
-        } else if (msg.matches("[Ff][Oo][Rr][Tt][Uu][Nn][Ee].*")) {
-        	//System.out.println("Msg starts with fortune, trying to split");
-        	String[] parts = msg.split("\\s+");
-        	//System.out.println("parts.length = " + parts.length);
-        	if (parts.length > 1) {
-        		//System.out.println("category request: " + parts[1]);
-        		fortuneStr = fortune.getFortune(parts[1]);
-        	} else {
-        		//System.out.println("normal fortune request");
-        		fortuneStr = fortune.getFortune();
-        	}
-        }
-        
-        if (!fortuneStr.equalsIgnoreCase("No fortune.")) {
-        	try {
-        		// need delay before sending msg, or things appear out of order
-        		try {
-        			Thread.sleep(500);
-        		}
-        		catch (InterruptedException ex) {
-        			System.err.println("Caught Interrupted Exception");
-    				ex.printStackTrace();
-        		}
-        		room.sendMessage(fortuneStr);
-			} catch (XMPPException ex) {
-				System.err.println("Caught XMPP Exception");
-				ex.printStackTrace();
+		fortune = new Fortune();
+		
+		try {
+			rooms = new ArrayList<FortuneProcessor>();
+			String allConfRooms = props.getProperty("rooms");
+			String[] confRooms = allConfRooms.split(",");
+			for (String confRoom : confRooms) {
+				System.out.println("Trying to join room: " + confRoom);
+				String confRoomName = confRoom + "@" + props.getProperty("conference");
+				MultiUserChat room = new MultiUserChat(connection, confRoomName);
+				DiscussionHistory history = new DiscussionHistory();
+				history.setMaxStanzas(0);
+				FortuneProcessor fp = new FortuneProcessor(this, fortune, room);
+				rooms.add(fp);
+				room.addMessageListener(fp);
+				room.join(props.getProperty("nick"), props.getProperty("pass"), history, SmackConfiguration.getPacketReplyTimeout());
 			}
-        }
+		}
+		catch (XMPPException ex) {
+			System.err.println("Caught XMPP Exception while joining room");
+			ex.printStackTrace();
+		}
 	}
+
+	
 	
 	public void quit() {
 		System.out.println("Disconnecting XMPP connection");
@@ -120,9 +97,10 @@ public class FortuneBot implements PacketListener {
 		return shouldRun;
 	}
 	
-	/**
-	 * @param args
-	 */
+	public void stopRunning() {
+		shouldRun = false;
+	}
+	
 	public static void main(String[] args) {
 		FortuneBot bot = new FortuneBot();
 		while (bot.running()) {

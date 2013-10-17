@@ -18,7 +18,9 @@ public class Fortune {
 			"ethnic", "firefly", "food", "fortunes", "kids", "knghtbrd", "law", "linuxcookie",
 			"literature", "love", "magic", "medicine", "men-women", "miscellaneous", "news",
 			"paradoxum", "people", "platitudes", "politics", "riddles", "science", "songs-poems",
-			"sports", "startrek", "wisdom", "work", "zippy", "offensive", "duckdynasty", "mismanagement", "grail"
+			"sports", "startrek", "wisdom", "work", "zippy", "offensive", "duckdynasty", "mismanagement", "grail",
+			"airplane", "caddyshack", "animal-house", "princess-bride", "godfather", "office-space",
+			"stripes", "spaceballs", "blazing-saddles"
 			);
 
 	//protected HashMap<String, ArrayList<String>> fortunes;
