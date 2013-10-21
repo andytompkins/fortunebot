@@ -63,6 +63,9 @@ public class FileFortune implements Fortune {
 		}
 	}
 	
+	public void addCategory(String cat) {
+		
+	}
 	public void addFortuneToCategory(String cat, String fortune) {
 		
 	}

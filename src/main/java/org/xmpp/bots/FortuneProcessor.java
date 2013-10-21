@@ -48,6 +48,12 @@ public class FortuneProcessor implements PacketListener {
 				String f = msg.substring(index);
 				String safeF = f.replaceAll("'", "''");
 				fortune.addFortuneToCategory(cat, safeF);
+			} else if (parts[1].equalsIgnoreCase("imdb-create")) {
+				String cat = parts[2];
+				String safeC = cat.replaceAll("'", "''");
+				int index = parts[0].length() + 1 + parts[1].length() + 1 + parts[2].length() + 1;
+				String url = msg.substring(index);
+				bot.quoteMaker.makeMovieQuotes(safeC, url);
 			}
 	 
 			

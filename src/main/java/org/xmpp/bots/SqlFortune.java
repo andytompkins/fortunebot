@@ -135,6 +135,21 @@ public class SqlFortune implements Fortune {
 		}
 	}
 	
+	public void addCategory(String cat) {
+		Long catId = getCategoryId(cat);
+		if (catId != -1L) {
+			return;
+		}
+		try {
+			Statement s = db.createStatement();
+			s.setQueryTimeout(30);
+			String safeC = cat.replaceAll("'", "''");
+			s.executeUpdate("insert into categories values (\"" + safeC + "\")");
+		} catch (SQLException e) {
+			System.err.println(e);
+		}
+	}
+	
 	public void closeDb() {
 		try {
 			if (db != null) {
@@ -210,7 +225,7 @@ public class SqlFortune implements Fortune {
 			Statement s = db.createStatement();
 			for (String cat : fortunes.keySet()) {
 				System.out.println("inserting");
-				s.executeUpdate("insert into categories values(\"" + cat + "\")");
+				s.executeUpdate("insert into categories values (\"" + cat + "\")");
 				System.out.println("getting id");
 				ResultSet rs = s.executeQuery("select last_insert_rowid()");
 				if (rs.next()) {

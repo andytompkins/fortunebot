@@ -26,6 +26,7 @@ public class FortuneBot {
 	//protected MultiUserChat room;
 	protected ArrayList<FortuneProcessor> rooms;
 	protected Fortune fortune;
+	public IMDBMovieQuoteMaker quoteMaker;
 	protected boolean shouldRun = true;
 	
 	public FortuneBot() {
@@ -63,6 +64,7 @@ public class FortuneBot {
 		}
 		
 		fortune = new SqlFortune();
+		quoteMaker = new IMDBMovieQuoteMaker(fortune);
 		
 		try {
 			rooms = new ArrayList<FortuneProcessor>();
@@ -85,8 +87,6 @@ public class FortuneBot {
 			ex.printStackTrace();
 		}
 	}
-
-	
 	
 	public void quit() {
 		System.out.println("Disconnecting XMPP connection");
