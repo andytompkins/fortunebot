@@ -62,7 +62,7 @@ public class FortuneBot {
 			ex.printStackTrace();
 		}
 		
-		fortune = new Fortune();
+		fortune = new SqlFortune();
 		
 		try {
 			rooms = new ArrayList<FortuneProcessor>();
@@ -99,30 +99,49 @@ public class FortuneBot {
 	
 	public void stopRunning() {
 		shouldRun = false;
+		fortune.closeDb();
 	}
 	
 	public static void main(String[] args) {
-		FortuneBot bot = new FortuneBot();
-		while (bot.running()) {
+		
+		if (args.length > 0) {
+			if (args[0].equalsIgnoreCase("load-database")) {
+				System.out.println("Loading database...");
+				SqlFortune f = new SqlFortune();
+				f.createDb();
+				f.loadFromFiles();
+				
+				System.out.println(f.getFortune());
+				System.out.println(f.getFortune("futurama"));
+				
+				
+				f.closeDb();
+			}
+		} else {
+			
+			FortuneBot bot = new FortuneBot();
+			while (bot.running()) {
+				try {
+					// pause briefly
+					Thread.sleep(500);
+				}
+				catch (InterruptedException ex) {
+					System.err.println("Caught Interrupted Exception");
+					ex.printStackTrace();
+				}
+			
+			}
+		
+			// another delay, so clean up can occur (eg Wismar msg).
 			try {
 				// pause briefly
-				Thread.sleep(500);
+				Thread.sleep(2000);
 			}
 			catch (InterruptedException ex) {
 				System.err.println("Caught Interrupted Exception");
 				ex.printStackTrace();
 			}
-			
-		}
-		
-		// another delay, so clean up can occur (eg Wismar msg).
-		try {
-			// pause briefly
-			Thread.sleep(2000);
-		}
-		catch (InterruptedException ex) {
-			System.err.println("Caught Interrupted Exception");
-			ex.printStackTrace();
+				
 		}
 	}
 	

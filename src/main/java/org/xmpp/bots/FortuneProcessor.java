@@ -35,20 +35,34 @@ public class FortuneProcessor implements PacketListener {
         	
 		System.out.println("Received message: " + msg);
         
-       	if (msg.equalsIgnoreCase("fortunebot quit")) {
-        	//shouldRun = false;
-			bot.stopRunning();
-        	fortuneStr = "I'll BRB Wismar. Don't worry. Life will go on.";
-        } else if (msg.matches("[Ff][Oo][Rr][Tt][Uu][Nn][Ee].*")) {
-        	//System.out.println("Msg starts with fortune, trying to split");
+		if (msg.startsWith("fortunebot ")) {
+			
+			String[] parts = msg.split(" ");
+			System.out.println("Got command: " + parts[1]);
+			if (parts[1].equalsIgnoreCase("quit")) {
+				bot.stopRunning();
+	        	fortuneStr = "I'll BRB Wismar. Don't worry. Life will go on.";
+			} else if (parts[1].equalsIgnoreCase("add")) {
+				String cat = parts[2];
+				int index = parts[0].length() + 1 + parts[1].length() + 1 + parts[2].length() + 1;
+				String f = msg.substring(index);
+				String safeF = f.replaceAll("'", "''");
+				fortune.addFortuneToCategory(cat, safeF);
+			}
+	 
+			
+			
+			
+		} else if (msg.matches("[Ff][Oo][Rr][Tt][Uu][Nn][Ee].*")) {
+        	System.out.println("Msg starts with fortune, trying to split");
         	String[] parts = msg.split("\\s+");
-        	//System.out.println("parts.length = " + parts.length);
+        	System.out.println("parts.length = " + parts.length);
         	if (parts.length > 1) {
-        		//System.out.println("category request: " + parts[1]);
-        		fortuneStr = fortune.getFortune(parts[1]);
+        		System.out.println("category request: " + parts[1]);
+        		fortuneStr = "/quote " + fortune.getFortune(parts[1]);
         	} else {
-        		//System.out.println("normal fortune request");
-        		fortuneStr = fortune.getFortune();
+        		System.out.println("normal fortune request");
+        		fortuneStr = "/quote " + fortune.getFortune();
         	}
         }
         
