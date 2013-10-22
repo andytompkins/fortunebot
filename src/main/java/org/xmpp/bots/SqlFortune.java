@@ -122,8 +122,11 @@ public class SqlFortune implements Fortune {
 		return fortuneStr;
 	}
 	
-	public void addFortuneToCategory(String cat, String fortune) {
+	public String addFortuneToCategory(String cat, String fortune) {
 		Long catId = getCategoryId(cat);
+		if (catId != -1L) {
+			return "Category not found.";
+		}
 		try {
 			Statement s = db.createStatement();
 			s.setQueryTimeout(30);
@@ -133,12 +136,13 @@ public class SqlFortune implements Fortune {
 		} catch (SQLException e) {
 			System.err.println(e);
 		}
+		return "Fortune added.";
 	}
 	
-	public void addCategory(String cat) {
+	public String addCategory(String cat) {
 		Long catId = getCategoryId(cat);
 		if (catId != -1L) {
-			return;
+			return "Category not found.";
 		}
 		try {
 			Statement s = db.createStatement();
@@ -148,6 +152,80 @@ public class SqlFortune implements Fortune {
 		} catch (SQLException e) {
 			System.err.println(e);
 		}
+		return "Category added.";
+	}
+	
+	public String listFortunes(String cat) {
+		Long catId = getCategoryId(cat);
+		if (catId == -1L) {
+			return "";
+		}
+		StringBuilder fortunes = new StringBuilder();
+		try {
+			Statement s = db.createStatement();
+			s.setQueryTimeout(30);
+			ResultSet rs = s.executeQuery("select fortune from fortunes where categoryId=" + catId + " order by rowid");
+			int index = 0;
+			while (rs.next()) {
+				fortunes.append(index + ". " + rs.getString("fortune") + "\n");
+				index++;
+			}
+		} catch (SQLException e) {
+			System.err.println("Caught SQLException while querying for fortunes in category (list)");
+			System.err.println(e);	
+		}
+		return(fortunes.toString());
+	}
+	
+	public String editFortune(String cat, int index, String fortune) {
+		Long catId = getCategoryId(cat);
+		if (catId == -1L) {
+			return "Category not found.";
+		}
+		try {
+			Statement s = db.createStatement();
+			s.setQueryTimeout(30);
+			ResultSet rs = s.executeQuery("select rowid from fortunes where categoryId=" + catId + " order by rowid");
+			int fIndex = 0;
+			while (rs.next()) {
+				if (fIndex == index) {
+					Long fortuneId = rs.getLong("rowid");
+					String safeF = fortune.replaceAll("'", "''");
+					s.executeUpdate("update fortunes set fortune='" + safeF + "' where rowid=" + fortuneId);
+					break;
+				}
+				fIndex++;
+			}
+		} catch (SQLException e) {
+			System.err.println("Caught SQLException while deleting fortune");
+			System.err.println(e);	
+		}
+		return "Fortune updated.";
+	}
+	
+	public String deleteFortune(String cat, int index) {
+		Long catId = getCategoryId(cat);
+		if (catId == -1L) {
+			return "Category not found.";
+		}
+		try {
+			Statement s = db.createStatement();
+			s.setQueryTimeout(30);
+			ResultSet rs = s.executeQuery("select rowid from fortunes where categoryId=" + catId + " order by rowid");
+			int fIndex = 0;
+			while (rs.next()) {
+				if (fIndex == index) {
+					Long fortuneId = rs.getLong("rowid");
+					s.executeUpdate("delete from fortunes where rowid=" + fortuneId);
+					break;
+				}
+				fIndex++;
+			}
+		} catch (SQLException e) {
+			System.err.println("Caught SQLException while deleting fortune");
+			System.err.println(e);	
+		}
+		return "Fortune deleted.";
 	}
 	
 	public void closeDb() {

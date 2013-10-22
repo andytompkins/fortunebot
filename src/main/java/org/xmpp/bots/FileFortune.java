@@ -63,11 +63,23 @@ public class FileFortune implements Fortune {
 		}
 	}
 	
-	public void addCategory(String cat) {
-		
+	public String opNotSupp(String op) {
+		return op + " not supported.";
 	}
-	public void addFortuneToCategory(String cat, String fortune) {
-		
+	public String addCategory(String cat) {
+		return opNotSupp("addCategory");
+	}
+	public String addFortuneToCategory(String cat, String fortune) {
+		return opNotSupp("addFortuneToCategory");
+	}
+	public String listFortunes(String cat) {
+		return opNotSupp("listFortunes");
+	}
+	public String editFortune(String cat, int index, String fortune) {
+		return opNotSupp("editFortune");
+	}
+	public String deleteFortune(String cat, int index) {
+		return opNotSupp("deleteFortune");
 	}
 
 	public String getCategoriesAsStr() {
