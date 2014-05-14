@@ -47,7 +47,7 @@ public class SqlFortune implements Fortune {
 		try {
 			Statement s = db.createStatement();
 			s.setQueryTimeout(30);
-			ResultSet rs = s.executeQuery("select * from categories");
+			ResultSet rs = s.executeQuery("select * from categories ORDER BY name");
 			while (rs.next()) {
 				cats.append(rs.getString("name") + " ");
 			}
