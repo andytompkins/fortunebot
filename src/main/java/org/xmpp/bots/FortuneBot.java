@@ -1,22 +1,18 @@
 package org.xmpp.bots;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Properties;
 import java.util.ArrayList;
 
-
 import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.ConnectionConfiguration;
-import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smackx.muc.DiscussionHistory;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
@@ -28,9 +24,11 @@ public class FortuneBot {
 	protected Fortune fortune;
 	public IMDBMovieQuoteMaker quoteMaker;
 	protected boolean shouldRun = true;
+	static protected FortuneBot instance = null;
+	private Properties props = null;
 	
 	public FortuneBot() {
-		Properties props = new Properties();
+		props = new Properties();
 		try {
 			InputStream in = getClass().getResourceAsStream("/connection.properties");
 			props.load(in);
@@ -44,7 +42,34 @@ public class FortuneBot {
 			//ex.printStackTrace();
 			System.exit(2);
 		}
+
+		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler(){
+			@Override
+			public void uncaughtException(Thread arg0, Throwable arg1) {
+				System.err.println("Exception caught");
+				arg1.printStackTrace();
+			}
+			
+		});
 		
+		connect();
+	}
+	
+	public void disconnect() {
+		if (rooms != null) {
+			for (FortuneProcessor room: rooms) {
+				try {
+					room.room.leave();
+				} catch( IllegalStateException exc ) {
+					System.err.println("Ignoring IllegalStateException. If we're not connected, we can't exactly leave a room...");
+					exc.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	public void connect() {		
+		disconnect();
 		System.out.println("Creating XMPP connection configuration");
 		System.out.println("props are: " + props.getProperty("server") + " and " + props.getProperty("port"));
 		ConnectionConfiguration config = new ConnectionConfiguration(props.getProperty("server"), Integer.parseInt(props.getProperty("port")));
@@ -86,6 +111,10 @@ public class FortuneBot {
 			System.err.println("Caught XMPP Exception while joining room");
 			ex.printStackTrace();
 		}
+		catch(IllegalStateException ex) {
+			System.err.println("Caught IllegalStateException while joining room");
+			ex.printStackTrace();			
+		}
 	}
 	
 	public void quit() {
@@ -119,16 +148,20 @@ public class FortuneBot {
 			}
 		} else {
 			
-			FortuneBot bot = new FortuneBot();
-			while (bot.running()) {
+			instance = new FortuneBot();
+			instance.connect();
+			while (instance.running()) {
 				try {
 					// pause briefly
 					Thread.sleep(500);
+					if ( !instance.connection.isConnected()) {
+						instance.connect();
+					}
 				}
 				catch (InterruptedException ex) {
 					System.err.println("Caught Interrupted Exception");
 					ex.printStackTrace();
-				}
+				} 
 			
 			}
 		
