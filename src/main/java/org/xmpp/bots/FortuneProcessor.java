@@ -69,9 +69,15 @@ public class FortuneProcessor implements PacketListener {
 				String cat = parts[2];
 				int fIndex = Integer.parseInt(parts[3]);
 				fortune.deleteFortune(cat, fIndex);
-			}
-	 
-			
+			} else if (parts[1].equalsIgnoreCase("help")) {
+				fortuneStr = "/quote commands:\n";
+ 				fortuneStr += "- fortunebot quit\n";
+				fortuneStr += "- fortunebot imdb-create {category} {imdb-url}\n";
+				fortuneStr += "- fortunebot list {category} \n";
+				fortuneStr += "- fortunebot edit {category} {index} {new quote}\n";
+				fortuneStr += "- fortunebot delete {category} {index}\n";
+				fortuneStr += "- fortune {category}\n";
+			}		
 			
 			
 		} else if (msg.matches("[Ff][Oo][Rr][Tt][Uu][Nn][Ee].*")) {
