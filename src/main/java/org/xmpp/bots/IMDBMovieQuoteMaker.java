@@ -52,7 +52,7 @@ public class IMDBMovieQuoteMaker {
 			System.out.println("Adding category: " + cat);
 			fortune.addCategory(cat);
 			for (String quote : quotes) {
-				System.out.println("Adding quote");
+				System.out.println("Adding quote \"" + quote + "\"");
 				fortune.addFortuneToCategory(cat, quote);
 			}
 		}

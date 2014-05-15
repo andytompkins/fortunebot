@@ -10,9 +10,9 @@ import java.util.TreeMap;
 import java.util.Random;
 import java.util.Arrays;
 import java.util.List;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -22,6 +22,7 @@ public class SqlFortune implements Fortune {
 	
 	protected Random rand;
 	protected Connection db = null;
+	protected PreparedStatement insertFortune = null;
 	
 	public SqlFortune() {
 		try {
@@ -35,6 +36,9 @@ public class SqlFortune implements Fortune {
 		
 		try {
 			db = DriverManager.getConnection("jdbc:sqlite:fortune.db");
+
+			insertFortune = db.prepareStatement("insert into fortunes (categoryId,fortune) values ( ? , ? )");
+
 		} catch (SQLException e) {
 			System.err.println("Caught SQLException while connecting to db");
 			System.err.println(e);	
@@ -124,15 +128,16 @@ public class SqlFortune implements Fortune {
 	
 	public String addFortuneToCategory(String cat, String fortune) {
 		Long catId = getCategoryId(cat);
-		if (catId != -1L) {
+		if (catId == -1L) {
 			return "Category not found.";
 		}
 		try {
 			Statement s = db.createStatement();
 			s.setQueryTimeout(30);
-			String safeF = fortune.replaceAll("'", "''");
-			//System.out.println("==[ " + safeF + " ]==");
-			s.executeUpdate("insert into fortunes values ('" + safeF + "', " + catId + ")");
+			insertFortune.setLong(1, catId);
+			insertFortune.setString(2, fortune);
+			int count = insertFortune.executeUpdate();
+			System.out.println("Inserted " + count + " records for category: \""+catId+"\" fortune:\"" + fortune + "\"");
 		} catch (SQLException e) {
 			System.err.println(e);
 		}
