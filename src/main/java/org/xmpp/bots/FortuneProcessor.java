@@ -46,29 +46,25 @@ public class FortuneProcessor implements PacketListener {
 				String cat = parts[2];
 				int index = parts[0].length() + 1 + parts[1].length() + 1 + parts[2].length() + 1;
 				String f = msg.substring(index);
-				String safeF = f.replaceAll("'", "''");
-				fortune.addFortuneToCategory(cat, safeF);
+				fortuneStr = fortune.addFortuneToCategory(cat, f);
 			} else if (parts[1].equalsIgnoreCase("imdb-create")) {
 				String cat = parts[2];
-				String safeC = cat.replaceAll("'", "''");
 				int index = parts[0].length() + 1 + parts[1].length() + 1 + parts[2].length() + 1;
 				String url = msg.substring(index);
-				bot.quoteMaker.makeMovieQuotes(safeC, url);
+				bot.quoteMaker.makeMovieQuotes(cat, url);
 			} else if (parts[1].equalsIgnoreCase("list")) {
 				String cat = parts[2];
 				fortuneStr = fortune.listFortunes(cat);
 			} else if (parts[1].equalsIgnoreCase("edit")) {
 				String cat = parts[2];
-				String safeC = cat.replaceAll("'", "''");
 				int fIndex = Integer.parseInt(parts[3]);
 				int index = parts[0].length() + 1 + parts[1].length() + 1 + parts[2].length() + 1 + parts[3].length() + 1;
 				String f = msg.substring(index);
-				String safeF = f.replaceAll("'", "''");
-				fortune.editFortune(safeC, fIndex, safeF);
+				fortuneStr = fortune.editFortune(cat, fIndex, f);
 			} else if (parts[1].equalsIgnoreCase("delete")) {
 				String cat = parts[2];
 				int fIndex = Integer.parseInt(parts[3]);
-				fortune.deleteFortune(cat, fIndex);
+				fortuneStr = fortune.deleteFortune(cat, fIndex);
 			}
 	 
 			

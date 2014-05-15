@@ -27,7 +27,8 @@ public class SqlFortune implements Fortune {
 		try {
 			Class.forName("org.sqlite.JDBC");
 		} catch (ClassNotFoundException e) {
-			System.err.println(e);
+			e.printStackTrace();
+			System.err.println(e.getMessage());
 		}
 		
 		
@@ -36,8 +37,8 @@ public class SqlFortune implements Fortune {
 		try {
 			db = DriverManager.getConnection("jdbc:sqlite:fortune.db");
 		} catch (SQLException e) {
-			System.err.println("Caught SQLException while connecting to db");
-			System.err.println(e);	
+			e.printStackTrace();
+			System.err.println("Caught SQLException while connecting to db: " + e.getMessage());
 		}
 		
 	}
@@ -52,8 +53,9 @@ public class SqlFortune implements Fortune {
 				cats.append(rs.getString("name") + " ");
 			}
 		} catch (SQLException e) {
-			System.err.println("Caught SQLException while querying for categories");
-			System.err.println(e);	
+			e.printStackTrace();
+			System.err.println("Caught SQLException while querying for categories: " + e.getMessage());
+			return e.getMessage();
 		}
 		return(cats.toString());
 	}
@@ -63,13 +65,14 @@ public class SqlFortune implements Fortune {
 		try {
 			Statement s = db.createStatement();
 			s.setQueryTimeout(30);
-			ResultSet rs = s.executeQuery("select rowid from categories where name=\"" + categoryName + "\"");
+			String safeC = categoryName.replaceAll("'", "''");
+			ResultSet rs = s.executeQuery("select rowid from categories where name='" + safeC + "'");
 			if (rs.next()) {
 				catId = rs.getLong("rowid");
 			}
 		} catch (SQLException e) {
-			System.err.println("Caught SQLException while querying for category id");
-			System.err.println(e);	
+			e.printStackTrace();
+			System.err.println("Caught SQLException while querying for category id: " + e.getMessage());
 		}
 		return catId;
 	}
@@ -84,8 +87,8 @@ public class SqlFortune implements Fortune {
 				catids.add(rs.getLong("rowid"));
 			}
 		} catch (SQLException e) {
-			System.err.println("Caught SQLException while querying for category ids");
-			System.err.println(e);	
+			e.printStackTrace();
+			System.err.println("Caught SQLException while querying for category ids: " + e.getMessage());
 		}
 		int catIndex = rand.nextInt(catids.size());
 		return catids.get(catIndex);
@@ -101,8 +104,9 @@ public class SqlFortune implements Fortune {
 				catFortunes.add(rs.getString("fortune"));
 			}
 		} catch (SQLException e) {
-			System.err.println("Caught SQLException while querying for fortunes");
-			System.err.println(e);	
+			e.printStackTrace();
+			System.err.println("Caught SQLException while querying for fortunes: " + e.getMessage());
+			return e.getMessage();
 		}
 		int randomIndex = rand.nextInt(catFortunes.size());
 		return catFortunes.get(randomIndex);
@@ -124,7 +128,7 @@ public class SqlFortune implements Fortune {
 	
 	public String addFortuneToCategory(String cat, String fortune) {
 		Long catId = getCategoryId(cat);
-		if (catId != -1L) {
+		if (catId == -1L) {
 			return "Category not found.";
 		}
 		try {
@@ -134,14 +138,16 @@ public class SqlFortune implements Fortune {
 			//System.out.println("==[ " + safeF + " ]==");
 			s.executeUpdate("insert into fortunes values ('" + safeF + "', " + catId + ")");
 		} catch (SQLException e) {
-			System.err.println(e);
+			e.printStackTrace();
+			System.err.println("Caught SQLException while adding fortune to category: " + e.getMessage());
+			return e.getMessage();
 		}
-		return "Fortune added.";
+		return "F0rtune added.";
 	}
 	
 	public String addCategory(String cat) {
 		Long catId = getCategoryId(cat);
-		if (catId != -1L) {
+		if (catId == -1L) {
 			return "Category not found.";
 		}
 		try {
@@ -150,7 +156,9 @@ public class SqlFortune implements Fortune {
 			String safeC = cat.replaceAll("'", "''");
 			s.executeUpdate("insert into categories values (\"" + safeC + "\")");
 		} catch (SQLException e) {
-			System.err.println(e);
+			e.printStackTrace();
+			System.err.println("Caught SQLException while adding category: " + e.getMessage());
+			return e.getMessage();
 		}
 		return "Category added.";
 	}
@@ -158,7 +166,7 @@ public class SqlFortune implements Fortune {
 	public String listFortunes(String cat) {
 		Long catId = getCategoryId(cat);
 		if (catId == -1L) {
-			return "";
+			return "Category not found.";
 		}
 		StringBuilder fortunes = new StringBuilder();
 		try {
@@ -171,8 +179,9 @@ public class SqlFortune implements Fortune {
 				index++;
 			}
 		} catch (SQLException e) {
-			System.err.println("Caught SQLException while querying for fortunes in category (list)");
-			System.err.println(e);	
+			e.printStackTrace();
+			System.err.println("Caught SQLException while querying for fortunes in category (list): " + e.getMessage());
+			return e.getMessage();
 		}
 		return(fortunes.toString());
 	}
@@ -197,10 +206,11 @@ public class SqlFortune implements Fortune {
 				fIndex++;
 			}
 		} catch (SQLException e) {
-			System.err.println("Caught SQLException while deleting fortune");
-			System.err.println(e);	
+			e.printStackTrace();
+			System.err.println("Caught SQLException while updating fortune:" + e.getMessage());
+			return e.getMessage();
 		}
-		return "Fortune updated.";
+		return "F0rtune updated.";
 	}
 	
 	public String deleteFortune(String cat, int index) {
@@ -222,10 +232,11 @@ public class SqlFortune implements Fortune {
 				fIndex++;
 			}
 		} catch (SQLException e) {
-			System.err.println("Caught SQLException while deleting fortune");
-			System.err.println(e);	
+			e.printStackTrace();
+			System.err.println("Caught SQLException while deleting fortune: " + e.getMessage());
+			return e.getMessage();
 		}
-		return "Fortune deleted.";
+		return "F0rtune deleted.";
 	}
 	
 	public void closeDb() {
@@ -234,6 +245,7 @@ public class SqlFortune implements Fortune {
 				db.close();
 			}
 		} catch (SQLException e) {
+			e.printStackTrace();
 			System.err.println("Caught SQLException while closing db");
 			System.err.println(e);
 		}
