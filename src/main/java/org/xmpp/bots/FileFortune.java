@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collection;
 //import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Random;
@@ -81,10 +82,17 @@ public class FileFortune implements Fortune {
 	public String deleteFortune(String cat, int index) {
 		return opNotSupp("deleteFortune");
 	}
+	
+	public static
+	<T extends Comparable<? super T>> List<T> asSortedList(Collection<T> c) {
+	  List<T> list = new ArrayList<T>(c);
+	  java.util.Collections.sort(list);
+	  return list;
+	}	
 
 	public String getCategoriesAsStr() {
 		StringBuilder cats = new StringBuilder();
-		for (String s : fortunes.keySet())
+		for (String s : asSortedList(fortunes.keySet()))
 		{
 		    cats.append(s);
 		    cats.append(" ");

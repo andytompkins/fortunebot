@@ -10,9 +10,9 @@ import java.util.TreeMap;
 import java.util.Random;
 import java.util.Arrays;
 import java.util.List;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -22,6 +22,7 @@ public class SqlFortune implements Fortune {
 	
 	protected Random rand;
 	protected Connection db = null;
+	protected PreparedStatement insertFortune = null;
 	
 	public SqlFortune() {
 		try {
@@ -36,6 +37,9 @@ public class SqlFortune implements Fortune {
 		
 		try {
 			db = DriverManager.getConnection("jdbc:sqlite:fortune.db");
+
+			insertFortune = db.prepareStatement("insert into fortunes (categoryId,fortune) values ( ? , ? )");
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.err.println("Caught SQLException while connecting to db: " + e.getMessage());
@@ -48,7 +52,7 @@ public class SqlFortune implements Fortune {
 		try {
 			Statement s = db.createStatement();
 			s.setQueryTimeout(30);
-			ResultSet rs = s.executeQuery("select * from categories");
+			ResultSet rs = s.executeQuery("select * from categories ORDER BY name");
 			while (rs.next()) {
 				cats.append(rs.getString("name") + " ");
 			}
@@ -134,9 +138,10 @@ public class SqlFortune implements Fortune {
 		try {
 			Statement s = db.createStatement();
 			s.setQueryTimeout(30);
-			String safeF = fortune.replaceAll("'", "''");
-			//System.out.println("==[ " + safeF + " ]==");
-			s.executeUpdate("insert into fortunes values ('" + safeF + "', " + catId + ")");
+			insertFortune.setLong(1, catId);
+			insertFortune.setString(2, fortune);
+			int count = insertFortune.executeUpdate();
+			System.out.println("Inserted " + count + " records for category: \""+catId+"\" fortune:\"" + fortune + "\"");
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.err.println("Caught SQLException while adding fortune to category: " + e.getMessage());
